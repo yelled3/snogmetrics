@@ -19,7 +19,7 @@ require 'snogmetrics/railtie' if defined? Rails::Railtie
 # The default implementation outputs the real API only when 
 # `Rails.env.production?` is true, and otherwise uses console.log
 module Snogmetrics
-  VERSION = '0.1.8'
+  VERSION = '0.1.8.tgp'
 
   # Returns an instance of KissmetricsApi, which is an interface to the
   # KISSmetrics API. It has the methods #record and #identify, which work just
@@ -163,7 +163,19 @@ private
         }
         JS
       elsif @output_strategy == :live
-        %((function(){function _kms(u,d){if(navigator.appName.indexOf("Microsoft")==0 && d)document.write("<scr"+"ipt defer='defer' async='true' src='"+u+"'></scr"+"ipt>");else{var s=document.createElement('script');s.type='text/javascript';s.async=true;s.src=u;(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(s);}}_kms('https://i.kissmetrics.com/i.js');_kms('http'+('https:'==document.location.protocol ? 's://s3.amazonaws.com/' : '://')+'scripts.kissmetrics.com/#{@api_key}.1.js',1);})();)
+        <<-END
+          <script type="text/javascript">
+            var _kmq = _kmq || [];
+            function _kms(u){
+              setTimeout(function(){
+                var s = document.createElement('script'); var f = document.getElementsByTagName('script')[0];
+                s.type = 'text/javascript'; s.async = true;
+                s.src = u; f.parentNode.insertBefore(s, f);
+              }, 1);
+            }
+            _kms('//i.kissmetrics.com/i.js');_kms('//doug1izaerwt3.cloudfront.net/#{@api_key}.1.js');
+          </script>
+        END
       elsif @output_strategy == :array
         ""
       else
